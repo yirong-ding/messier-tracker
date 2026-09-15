@@ -7,7 +7,7 @@ A folder counts as a Messier object when its name contains "M31", "M 31", "M_31"
 Folders that don't say which object they are can be mapped in manual.json:
   {"folders": {"<folder name>": 42}, "objects": [57]}
 "objects" marks targets as shot even without any folder (e.g. shot with other gear).
-Shooting dates and times are never written to data.json.
+The shooting date/time is read from the folder name (e.g. "..._2026-01-17-19-14-25").
 """
 import json
 import re
@@ -29,6 +29,7 @@ THUMB_MAX = 800
 MESSIER = re.compile(r"(?<![A-Za-z0-9])M(?:essier)?[ _-]?(\d{1,3})(?!\d)", re.I)
 DWARF = re.compile(r"_EXP_(?P<exp>[\d.]+)_GAIN_(?P<gain>\d+)_")
 CAMERA = re.compile(r"_(TELE|WIDE)_")
+WHEN = re.compile(r"(\d{4}-\d{2}-\d{2})(?:[-_ T](\d{2})[-:](\d{2}))?")
 
 
 def load_json(name, default):
@@ -63,7 +64,10 @@ def session(folder):
     gain = int(dwarf["gain"]) if dwarf else info.get("gain")
     frames = sum(1 for f in folder.iterdir() if f.suffix.lower() in FRAME_EXT)
     stacked = int(info.get("shotsStacked") or 0)
+    when = WHEN.search(folder.name)
     return {
+        "date": when[1] if when else None,
+        "time": f"{when[2]}:{when[3]}" if when and when[2] else None,
         "camera": camera[1] if camera else None,
         "exp": exp,
         "gain": gain,

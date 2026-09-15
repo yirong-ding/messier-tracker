@@ -5,7 +5,7 @@ The page is in English and can be switched to Chinese.
 
 - Progress ring, total integration time and session count
 - Filter by shot, not shot, or **doable tonight** (worked out from your latitude and longitude), and by object type
-- Thumbnails and per-session details (camera, exposure, gain, frames). **Shooting dates and times are never published.**
+- Thumbnails and per-session details (date, camera, exposure, gain, frames) for objects you have shot. No times are shown for objects not yet shot.
 
 ## Use it yourself
 
@@ -64,4 +64,4 @@ To use your own processed image instead of the auto thumbnail, put it at `img/cu
 3. 删除 `img/M*.jpg`，把 `data.json` 改成 `{"objects": {}}`。
 4. 每次拍完，运行 `update.bat`（Windows）或 `./update.sh`（macOS / Linux），网页约 1 分钟后更新。
 
-文件夹名里带 `M31`、`M 31` 或 `Messier 31` 就会被识别。没写目标的文件夹，或者用其他设备拍的天体，写进 `manual.json`。网页不会显示拍摄日期和时间。
+文件夹名里带 `M31`、`M 31` 或 `Messier 31` 就会被识别。没写目标的文件夹，或者用其他设备拍的天体，写进 `manual.json`。已拍的天体会显示拍摄日期和时间（从文件夹名读取），未拍的天体不显示时间。

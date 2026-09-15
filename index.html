@@ -105,28 +105,28 @@
 const I18N = {
   en: {
     subtitle: "Photographing all 110 Messier objects", with: " with ",
-    shot: "Shot", left: "Remaining", total: "Integration", sessions: "Sessions", tonightN: "Doable tonight",
+    shot: "Shot", left: "Remaining", total: "Integration", sessions: "Sessions", nights: "Nights", tonightN: "Doable tonight",
     all: "All", done: "Shot", todo: "To do", tonight: "🌙 Tonight (to do)", search: "Search M number, name or constellation",
     allTypes: "All types", site: "Observing site (used for “tonight”)", lat: "Latitude", lon: "Longitude",
     rule: "An object is doable tonight if it stays above 30° for at least 2 hours between 20:00 and 04:00 local time. Moonlight and local obstructions are not considered.",
     empty: "No matching objects", close: "Close", notYet: "Not shot yet 🔭",
-    tonightMax: "Highest tonight: {a}° around {t}", good: " · ✅ good tonight",
+    tonightMax: "Highest tonight: {a}°", good: " · ✅ good tonight",
     badgeShot: "✓ Shot", badgeTonight: "🌙 Tonight", nSessions: (n) => `${n} session${n === 1 ? "" : "s"}`,
     mag: "mag", ra: "RA", dec: "Dec",
-    cols: ["#", "Camera", "Exposure", "Gain", "Stacked / frames", "Integration"],
+    cols: ["Date", "Camera", "Exposure", "Gain", "Stacked / frames", "Integration"],
     footer: "Want to track your own? Fork it on GitHub", other: "中文",
   },
   zh: {
     subtitle: "拍摄全部 110 个梅西耶天体", with: " · ",
-    shot: "已拍", left: "剩余", total: "总积分", sessions: "拍摄组数", tonightN: "今晚可补",
+    shot: "已拍", left: "剩余", total: "总积分", sessions: "拍摄组数", nights: "拍摄日", tonightN: "今晚可补",
     all: "全部", done: "已拍", todo: "未拍", tonight: "🌙 今晚可拍（未拍）", search: "搜索 M 编号 / 名称 / 星座",
     allTypes: "全部类型", site: "观测地点（用于计算“今晚可拍”）", lat: "纬度", lon: "经度",
     rule: "规则：当地时间 20:00 到次日 04:00 之间，高度角超过 30° 的时间不少于 2 小时。没有考虑月光和本地遮挡。",
     empty: "没有符合条件的天体", close: "关闭", notYet: "还没拍 🔭",
-    tonightMax: "今晚最高 {a}°（约 {t}）", good: " · ✅ 适合拍摄",
+    tonightMax: "今晚最高 {a}°", good: " · ✅ 适合拍摄",
     badgeShot: "✓ 已拍", badgeTonight: "🌙 今晚可拍", nSessions: (n) => `${n} 组`,
     mag: "等", ra: "赤经", dec: "赤纬",
-    cols: ["#", "相机", "曝光", "增益", "叠加 / 总帧", "积分"],
+    cols: ["日期", "相机", "曝光", "增益", "叠加 / 总帧", "积分"],
     footer: "想记录自己的进度？在 GitHub 上 Fork", other: "English",
   },
 };
@@ -174,7 +174,6 @@ function tonight(obj) {
 
 // ---------- Rendering ----------
 const fmtTime = (s) => s >= 3600 ? `${(s / 3600).toFixed(1)} h` : `${Math.round(s / 60)} min`;
-const hhmm = (d) => new Date(d.getTime() + tzMs()).toISOString().slice(11, 16);
 const sumIntegration = (o) => o.shot.sessions.reduce((a, x) => a + (x.integration || 0), 0);
 const nameOf = (o) => state.lang === "zh" ? (o.zh || o.en) : o.en;
 const conOf = (o) => state.lang === "zh" ? (CONSTELLATIONS_ZH[o.con] || o.con) : o.con;
@@ -204,9 +203,10 @@ function render() {
   $("#ring").style.setProperty("--p", (done.length / 110) * 100);
   const total = done.reduce((s, o) => s + sumIntegration(o), 0);
   const sessions = done.reduce((s, o) => s + o.shot.sessions.length, 0);
+  const nights = new Set(done.flatMap((o) => o.shot.sessions.map((x) => x.date).filter(Boolean))).size;
   $("#stats").innerHTML = [
     [t("shot"), done.length], [t("left"), 110 - done.length], [t("total"), fmtTime(total)],
-    [t("sessions"), sessions], [t("tonightN"), MESSIER.filter((o) => !o.shot && o.tn.ok).length],
+    [t("sessions"), sessions], [t("nights"), nights], [t("tonightN"), MESSIER.filter((o) => !o.shot && o.tn.ok).length],
   ].map(([k, v]) => `<span class="stat">${k} <b>${v}</b></span>`).join("");
 
   const q = state.q.trim().toLowerCase().replace(/^m(essier)?\s*/, "");
@@ -241,7 +241,7 @@ function openDetail(m) {
   const o = MESSIER.find((x) => x.m === m);
   const s = o.shot;
   const dash = (v, unit = "") => v == null ? "—" : v + unit;
-  const rows = s ? s.sessions.map((x, i) => `<tr><td>${i + 1}</td><td>${dash(x.camera)}</td><td>${dash(x.exp, "s")}</td>
+  const rows = s ? s.sessions.map((x, i) => `<tr><td>${x.date ? x.date + (x.time ? " " + x.time : "") : i + 1}</td><td>${dash(x.camera)}</td><td>${dash(x.exp, "s")}</td>
     <td>${dash(x.gain)}</td><td>${x.stacked || "—"} / ${x.frames}</td><td>${x.integration ? fmtTime(x.integration) : "—"}</td></tr>`).join("") : "";
   $("#dlg").innerHTML = `${s?.image ? `<img src="${s.image}" alt="M${m}">` : ""}
     <div class="dlg">
@@ -249,7 +249,7 @@ function openDetail(m) {
       <h2>M${m} ${nameOf(o)}</h2>
       <div class="sub">${TYPES[o.type][state.lang]} · ${conOf(o)} · ${o.mag} ${t("mag")} ·
         ${t("ra")} ${o.ra.toFixed(2)}h · ${t("dec")} ${o.dec.toFixed(1)}°</div>
-      <div class="sub">${fill(t("tonightMax"), { a: o.tn.best.toFixed(0), t: hhmm(o.tn.bestAt) })}${o.tn.ok ? t("good") : ""}</div>
+      <div class="sub">${fill(t("tonightMax"), { a: o.tn.best.toFixed(0) })}${o.tn.ok ? t("good") : ""}</div>
       ${s && s.sessions.length ? `<div class="tablewrap"><table><tr>${t("cols").map((c) => `<th>${c}</th>`).join("")}</tr>${rows}</table></div>`
           : s ? "" : `<p class="sub">${t("notYet")}</p>`}
     </div>`;

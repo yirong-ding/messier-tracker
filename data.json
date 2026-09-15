@@ -4,6 +4,8 @@
    "image": "img/M31.jpg",
    "sessions": [
     {
+     "date": "2026-01-17",
+     "time": "19:14",
      "camera": "TELE",
      "exp": 15.0,
      "gain": 60,
@@ -12,6 +14,8 @@
      "integration": 45
     },
     {
+     "date": "2026-01-17",
+     "time": "19:18",
      "camera": "TELE",
      "exp": 15.0,
      "gain": 60,
@@ -20,6 +24,8 @@
      "integration": 45
     },
     {
+     "date": "2026-01-17",
+     "time": "19:22",
      "camera": "TELE",
      "exp": 15.0,
      "gain": 60,
@@ -33,6 +39,8 @@
    "image": "img/M42.jpg",
    "sessions": [
     {
+     "date": "2026-01-21",
+     "time": "20:38",
      "camera": "TELE",
      "exp": 30.0,
      "gain": 100,
@@ -46,6 +54,8 @@
    "image": "img/M44.jpg",
    "sessions": [
     {
+     "date": "2026-01-21",
+     "time": "22:04",
      "camera": "TELE",
      "exp": 30.0,
      "gain": 60,
@@ -54,6 +64,8 @@
      "integration": 30
     },
     {
+     "date": "2026-01-21",
+     "time": "22:07",
      "camera": "TELE",
      "exp": 30.0,
      "gain": 60,
@@ -62,6 +74,8 @@
      "integration": 3180
     },
     {
+     "date": "2026-01-21",
+     "time": "22:01",
      "camera": "TELE",
      "exp": 60.0,
      "gain": 120,
@@ -75,6 +89,8 @@
    "image": "img/M45.jpg",
    "sessions": [
     {
+     "date": "2026-01-19",
+     "time": "22:31",
      "camera": "TELE",
      "exp": 10.0,
      "gain": 50,
@@ -83,6 +99,8 @@
      "integration": 40
     },
     {
+     "date": "2026-01-19",
+     "time": "20:59",
      "camera": "TELE",
      "exp": 30.0,
      "gain": 60,
@@ -91,6 +109,8 @@
      "integration": 3210
     },
     {
+     "date": "2026-01-19",
+     "time": "22:21",
      "camera": "TELE",
      "exp": 30.0,
      "gain": 60,
@@ -99,6 +119,8 @@
      "integration": 210
     },
     {
+     "date": "2026-01-19",
+     "time": "22:36",
      "camera": "TELE",
      "exp": 30.0,
      "gain": 60,
@@ -112,6 +134,8 @@
    "image": "img/M109.jpg",
    "sessions": [
     {
+     "date": "2026-05-28",
+     "time": "22:44",
      "camera": "TELE",
      "exp": 15.0,
      "gain": 40,
@@ -120,6 +144,8 @@
      "integration": 165
     },
     {
+     "date": "2026-05-28",
+     "time": "22:51",
      "camera": "TELE",
      "exp": 15.0,
      "gain": 40,
@@ -128,6 +154,8 @@
      "integration": 5220
     },
     {
+     "date": "2026-05-28",
+     "time": "22:35",
      "camera": "TELE",
      "exp": 15.0,
      "gain": 60,

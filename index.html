@@ -111,7 +111,7 @@ const I18N = {
     rule: "An object is doable tonight if it stays above 30° for at least 2 hours between 20:00 and 04:00 local time. Moonlight and local obstructions are not considered.",
     empty: "No matching objects", close: "Close", notYet: "Not shot yet 🔭",
     tonightMax: "Highest tonight: {a}° around {t}", good: " · ✅ good tonight",
-    badgeShot: "✓ Shot", badgeTonight: "Tonight {t}", nSessions: (n) => `${n} session${n === 1 ? "" : "s"}`,
+    badgeShot: "✓ Shot", badgeTonight: "🌙 Tonight", nSessions: (n) => `${n} session${n === 1 ? "" : "s"}`,
     mag: "mag", ra: "RA", dec: "Dec",
     cols: ["#", "Camera", "Exposure", "Gain", "Stacked / frames", "Integration"],
     footer: "Want to track your own? Fork it on GitHub", other: "中文",
@@ -124,7 +124,7 @@ const I18N = {
     rule: "规则：当地时间 20:00 到次日 04:00 之间，高度角超过 30° 的时间不少于 2 小时。没有考虑月光和本地遮挡。",
     empty: "没有符合条件的天体", close: "关闭", notYet: "还没拍 🔭",
     tonightMax: "今晚最高 {a}°（约 {t}）", good: " · ✅ 适合拍摄",
-    badgeShot: "✓ 已拍", badgeTonight: "今晚 {t}", nSessions: (n) => `${n} 组`,
+    badgeShot: "✓ 已拍", badgeTonight: "🌙 今晚可拍", nSessions: (n) => `${n} 组`,
     mag: "等", ra: "赤经", dec: "赤纬",
     cols: ["#", "相机", "曝光", "增益", "叠加 / 总帧", "积分"],
     footer: "想记录自己的进度？在 GitHub 上 Fork", other: "English",
@@ -229,7 +229,7 @@ function render() {
     return `<button class="card ${o.shot ? "done" : ""}" data-m="${o.m}">
       <div class="thumb" ${img}>${img ? "" : "M" + o.m}
         ${o.shot ? `<span class="badge ok">${t("badgeShot")}</span>` : ""}
-        ${!o.shot && o.tn.ok ? `<span class="badge tn">${fill(t("badgeTonight"), { t: hhmm(o.tn.bestAt) })}</span>` : ""}
+        ${!o.shot && o.tn.ok ? `<span class="badge tn">${t("badgeTonight")}</span>` : ""}
       </div>
       <div class="info"><div class="m">M${o.m}<span>${nameOf(o)}</span></div>
         <div class="meta">${conOf(o)} · ${sub}</div></div>

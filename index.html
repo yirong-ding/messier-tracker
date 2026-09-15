@@ -30,6 +30,20 @@
   .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; font-size: 13px; }
   .stat b { color: var(--done); }
   .lang { align-self: flex-start; }
+
+  .sky { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; }
+  .sky .item { display: flex; gap: 10px; align-items: center; }
+  .sky .big { font-size: 30px; line-height: 1; }
+  .sky small { color: var(--muted); font-size: 12px; }
+  .clouds { display: flex; gap: 3px; flex: 1; min-width: 240px; overflow-x: auto; padding-bottom: 2px; }
+  .hr { display: grid; justify-items: center; gap: 2px; min-width: 30px; flex: 1; }
+  .hr .bar { width: 100%; height: 22px; border-radius: 4px;
+    background: color-mix(in srgb, #a4acbd calc(var(--c) * 1%), #16345c); }
+  .hr .bar.na { background: var(--line); }
+  .hr small { font-size: 10px; line-height: 1.1; }
+  .wx { flex-basis: 100%; }
+
   .bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
   .chip { background: var(--panel); border: 1px solid var(--line); color: var(--text); border-radius: 999px;
     padding: 5px 12px; cursor: pointer; font: inherit; }
@@ -47,7 +61,8 @@
   .badge { position: absolute; top: 6px; right: 6px; font-size: 11px; padding: 1px 7px; border-radius: 999px;
     background: rgba(0,0,0,.6); font-weight: 400; }
   .badge.ok { color: var(--done); }
-  .badge.tn { color: var(--tonight); left: 6px; right: auto; }
+  .badge.tn { color: var(--muted); left: 6px; right: auto; }
+  .badge.tn.now { color: var(--tonight); }
   .info { padding: 8px 10px; }
   .info .m { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .info .m span { font-weight: 400; color: var(--muted); font-size: 12px; margin-left: 4px; }
@@ -58,6 +73,7 @@
   dialog img { width: 100%; display: block; }
   .dlg { padding: 16px 20px 20px; }
   .dlg h2 { margin: 0 0 4px; }
+  .plan { margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: var(--bg); }
   table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
   th, td { text-align: left; padding: 5px 6px; border-bottom: 1px solid var(--line); white-space: nowrap; }
   th { color: var(--muted); font-weight: 400; }
@@ -81,6 +97,8 @@
     </div>
     <button class="chip lang" id="lang"></button>
   </header>
+
+  <section class="sky" id="sky"></section>
 
   <div class="bar" id="filters"></div>
   <div class="bar" id="types"></div>
@@ -109,74 +127,164 @@ const I18N = {
     subtitle: "Photographing all 110 Messier objects", with: " with ",
     shot: "Shot", left: "Remaining", total: "Integration", sessions: "Sessions", nights: "Nights", tonightN: "Doable tonight",
     all: "All", done: "Shot", todo: "To do", tonight: "🌙 Tonight (to do)", search: "Search M number, name or constellation",
-    allTypes: "All types", site: "Observing site (used for “tonight”)", lat: "Latitude", lon: "Longitude",
+    allTypes: "All types", site: "Observing site & rules", lat: "Latitude", lon: "Longitude",
     locate: "📍 Use my location", locating: "Locating…", locOk: "Done. Saved only in this browser.",
     locFail: "Couldn't get your location. Check the browser's location permission.",
-    rule: "An object is doable tonight if it stays above 30° for at least 2 hours between 20:00 and 04:00 local time. Moonlight and local obstructions are not considered.",
+    rule: "Recommended time: the earliest stretch of at least 1 hour in the next 3 nights when the sky is dark (Sun below −12°), the object is above 30°, cloud cover is at most 40% and the Moon isn't too close. The time shown is when the object is highest in that stretch. Cloud forecast from Open-Meteo; your coordinates, rounded to 0.1°, are sent to it. Local obstructions are not considered.",
     empty: "No matching objects", close: "Close", notYet: "Not shot yet 🔭",
-    tonightMax: "Highest tonight: {a}°", good: " · ✅ good tonight",
-    badgeShot: "✓ Shot", badgeTonight: "🌙 Tonight", nSessions: (n) => `${n} session${n === 1 ? "" : "s"}`,
+    badgeShot: "✓ Shot", nSessions: (n) => `${n} session${n === 1 ? "" : "s"}`,
     mag: "mag", ra: "RA", dec: "Dec",
     cols: ["Date", "Camera", "Exposure", "Gain", "Stacked / frames", "Integration"],
     footer: "Want to track your own? Fork it on GitHub", other: "中文",
+    tonightLbl: "Tonight", tomorrowLbl: "Tomorrow",
+    phases: ["New Moon", "Waxing crescent", "First quarter", "Waxing gibbous", "Full Moon", "Waning gibbous", "Last quarter", "Waning crescent"],
+    lit: "{p}% lit", dark: "Dark sky tonight (Sun below −12°)", noDark: "No full darkness tonight",
+    clouds: "Cloud cover tonight", wxLoading: "Loading cloud forecast…", wxFail: "Cloud forecast unavailable — recommendations ignore weather.",
+    wxOk: "Cloud forecast: Open-Meteo", next: "Next good window", best: "best at {t}",
+    detail: "altitude {a}° · cloud {c} · Moon {s}° away", noWindow: "No good window in the next 3 nights (too low, cloudy or moonlit).",
   },
   zh: {
     subtitle: "拍摄全部 110 个梅西耶天体", with: " · ",
     shot: "已拍", left: "剩余", total: "总积分", sessions: "拍摄组数", nights: "拍摄日", tonightN: "今晚可补",
     all: "全部", done: "已拍", todo: "未拍", tonight: "🌙 今晚可拍（未拍）", search: "搜索 M 编号 / 名称 / 星座",
-    allTypes: "全部类型", site: "观测地点（用于计算“今晚可拍”）", lat: "纬度", lon: "经度",
+    allTypes: "全部类型", site: "观测地点和计算规则", lat: "纬度", lon: "经度",
     locate: "📍 获取我的位置", locating: "定位中…", locOk: "已更新，只保存在这个浏览器里。",
     locFail: "没能获取位置，请检查浏览器的定位权限。",
-    rule: "规则：当地时间 20:00 到次日 04:00 之间，高度角超过 30° 的时间不少于 2 小时。没有考虑月光和本地遮挡。",
+    rule: "推荐时间：未来 3 晚里最早的一段可拍时段（至少连续 1 小时），要求天已黑透（太阳在地平线下 12° 以下）、天体高度超过 30°、云量不超过 40%、离月亮不太近。显示的是这段时间里天体升到最高的时刻。云量预报来自 Open-Meteo，会把你的经纬度（保留到 0.1°）发给它。没有考虑本地遮挡。",
     empty: "没有符合条件的天体", close: "关闭", notYet: "还没拍 🔭",
-    tonightMax: "今晚最高 {a}°", good: " · ✅ 适合拍摄",
-    badgeShot: "✓ 已拍", badgeTonight: "🌙 今晚可拍", nSessions: (n) => `${n} 组`,
+    badgeShot: "✓ 已拍", nSessions: (n) => `${n} 组`,
     mag: "等", ra: "赤经", dec: "赤纬",
     cols: ["日期", "相机", "曝光", "增益", "叠加 / 总帧", "积分"],
     footer: "想记录自己的进度？在 GitHub 上 Fork", other: "English",
+    tonightLbl: "今晚", tomorrowLbl: "明晚",
+    phases: ["新月", "蛾眉月", "上弦月", "盈凸月", "满月", "亏凸月", "下弦月", "残月"],
+    lit: "亮度 {p}%", dark: "今晚天黑时段（太阳低于 −12°）", noDark: "今晚天不会完全黑",
+    clouds: "今晚云量", wxLoading: "正在获取云量预报…", wxFail: "云量预报获取失败，推荐时间暂不考虑天气。",
+    wxOk: "云量预报：Open-Meteo", next: "最近可拍", best: "推荐 {t}",
+    detail: "高度 {a}° · 云量 {c} · 离月亮 {s}°", noWindow: "未来 3 晚没有合适的时段（太低、多云或月光太亮）。",
   },
 };
+const MOON_ICONS = ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"];
+const MIN_ALT = 30, MAX_CLOUD = 40, SUN_DARK = -12, MIN_STEPS = 6;   // 6 × 10 min = 1 hour
+const HOUR = 3600000, STEP = 600000, RAD = Math.PI / 180, DEG = 180 / Math.PI;
 
 const $ = (s) => document.querySelector(s);
 const store = {
   get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
-const state = { filter: "all", type: "", q: "", config: {}, data: { objects: {} }, lang: "en", lat: 0, lon: 0 };
-const t = (k) => I18N[state.lang][k];
+const state = { filter: "all", type: "", q: "", config: {}, data: { objects: {} }, lang: "en",
+  lat: 0, lon: 0, tz: 0, weather: null, wx: "loading", sky: null };
+const tr = (k) => I18N[state.lang][k];
 const fill = (s, vars) => s.replace(/\{(\w)\}/g, (_, k) => vars[k]);
 
-// ---------- Visibility tonight ----------
-function lstHours(date, lon) {
-  const jd = date.getTime() / 86400000 + 2440587.5;
-  const gmst = 18.697374558 + 24.06570982441908 * (jd - 2451545.0);
-  return (((gmst + lon / 15) % 24) + 24) % 24;
+// ---------- Astronomy (low-precision formulas, good to about 1°) ----------
+const jdOf = (t) => t / 86400000 + 2440587.5;
+function lstHours(t) {
+  const d = jdOf(t) - 2451545.0;
+  return (((18.697374558 + 24.06570982441908 * d + state.lon / 15) % 24) + 24) % 24;
 }
-function altitude(obj, date) {
-  const rad = Math.PI / 180;
-  const ha = (lstHours(date, state.lon) - obj.ra) * 15 * rad;
-  const lat = state.lat * rad, dec = obj.dec * rad;
-  return Math.asin(Math.sin(lat) * Math.sin(dec) + Math.cos(lat) * Math.cos(dec) * Math.cos(ha)) / rad;
+function altitude(ra, dec, t) {
+  const ha = (lstHours(t) - ra) * 15 * RAD, lat = state.lat * RAD, de = dec * RAD;
+  return Math.asin(Math.sin(lat) * Math.sin(de) + Math.cos(lat) * Math.cos(de) * Math.cos(ha)) * DEG;
 }
-// Time zone is estimated from the site's longitude so the result doesn't depend on the viewer's browser
-const tzMs = () => Math.round(state.lon / 15) * 3600000;
-function nightStart() {
-  const local = new Date(Date.now() + tzMs());
-  let start = Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate(), 20);
-  if (local.getUTCHours() < 12) start -= 86400000;   // after midnight, "tonight" is the night that began yesterday
-  return new Date(start - tzMs());
+function eclipticToEquatorial(lam, beta, eps) {
+  const l = lam * RAD, b = beta * RAD, e = eps * RAD;
+  const ra = Math.atan2(Math.sin(l) * Math.cos(e) - Math.tan(b) * Math.sin(e), Math.cos(l)) * DEG / 15;
+  return { ra: ((ra % 24) + 24) % 24, dec: Math.asin(Math.sin(b) * Math.cos(e) + Math.cos(b) * Math.sin(e) * Math.sin(l)) * DEG };
 }
-function tonight(obj) {
-  const start = nightStart();
-  let good = 0, best = -90, bestAt = null;
-  for (let i = 0; i <= 48; i++) {           // every 10 minutes for 8 hours
-    const time = new Date(start.getTime() + i * 600000);
-    const a = altitude(obj, time);
-    if (a > 30) good++;
-    if (a > best) { best = a; bestAt = time; }
+function sunPosition(t) {
+  const d = jdOf(t) - 2451545.0, g = (357.528 + 0.9856003 * d) * RAD;
+  const lam = 280.460 + 0.9856474 * d + 1.915 * Math.sin(g) + 0.020 * Math.sin(2 * g);
+  return { lam, ...eclipticToEquatorial(lam, 0, 23.439 - 4e-7 * d) };
+}
+function moonPosition(t) {
+  const T = (jdOf(t) - 2451545.0) / 36525, s = (a, b) => Math.sin((a + b * T) * RAD);
+  const lam = 218.32 + 481267.881 * T + 6.29 * s(135.0, 477198.87) - 1.27 * s(259.3, -413335.36)
+    + 0.66 * s(235.7, 890534.22) + 0.21 * s(269.9, 954397.74) - 0.19 * s(357.5, 35999.05) - 0.11 * s(186.5, 966404.03);
+  const beta = 5.13 * s(93.3, 483202.02) + 0.28 * s(228.2, 960400.89) - 0.28 * s(318.3, 6003.15) - 0.17 * s(217.6, -407332.21);
+  return { lam, ...eclipticToEquatorial(lam, beta, 23.439 - 0.013 * T) };
+}
+function separation(a, b) {
+  const c = Math.sin(a.dec * RAD) * Math.sin(b.dec * RAD)
+    + Math.cos(a.dec * RAD) * Math.cos(b.dec * RAD) * Math.cos((a.ra - b.ra) * 15 * RAD);
+  return Math.acos(Math.min(1, Math.max(-1, c))) * DEG;
+}
+
+// ---------- Local time at the observing site ----------
+// Offset comes from the weather API when available, otherwise it is estimated from longitude.
+const local = (t) => new Date(t + state.tz);
+const hhmm = (t) => local(t).toISOString().slice(11, 16);
+const nightKey = (t) => local(t - 12 * HOUR).toISOString().slice(0, 10);   // 01:00 still belongs to last evening's night
+// "Tonight" = the night still under way before 06:00, otherwise the coming night
+const tonightKey = () => local(Date.now() - 6 * HOUR).toISOString().slice(0, 10);
+const noonOf = (key) => Date.parse(key + "T12:00:00Z") - state.tz;
+function nightLabel(t) {
+  const key = nightKey(t);
+  const diff = Math.round((Date.parse(key) - Date.parse(tonightKey())) / 86400000);
+  if (diff === 0) return tr("tonightLbl");
+  if (diff === 1) return tr("tomorrowLbl");
+  return `${+key.slice(5, 7)}/${+key.slice(8, 10)}`;
+}
+
+// ---------- Weather ----------
+function cloudAt(t) {
+  const w = state.weather;
+  if (!w) return null;
+  return w.cloud[Math.floor((t - w.first) / HOUR)] ?? null;
+}
+async function loadWeather() {
+  state.wx = "loading";
+  renderSky();
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${state.lat.toFixed(1)}&longitude=${state.lon.toFixed(1)}`
+    + "&hourly=cloud_cover&past_days=1&forecast_days=4&timezone=auto";   // past_days keeps the whole of tonight after midnight
+  try {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(r.status);
+    const w = await r.json();
+    state.tz = w.utc_offset_seconds * 1000;
+    state.weather = { first: Date.parse(w.hourly.time[0] + ":00Z") - state.tz, cloud: w.hourly.cloud_cover };
+    state.wx = "ok";
+  } catch {
+    state.weather = null;
+    state.wx = "fail";
   }
-  return { ok: good >= 12, best, bestAt };
+  refresh();
 }
+
+// ---------- Planning ----------
+function buildSky() {
+  const now = Date.now();
+  const steps = [];
+  for (let t = noonOf(tonightKey()); t <= now + 72 * HOUR; t += STEP) {
+    const sun = sunPosition(t), moon = moonPosition(t);
+    steps.push({ t, dark: altitude(sun.ra, sun.dec, t) < SUN_DARK, moon, moonUp: altitude(moon.ra, moon.dec, t) > 0, cloud: cloudAt(t) });
+  }
+  const elong = ((moonPosition(now).lam - sunPosition(now).lam) % 360 + 360) % 360;
+  state.sky = { now, steps, illum: (1 - Math.cos(elong * RAD)) / 2, phase: Math.round(elong / 45) % 8 };
+}
+function plan(o) {
+  const { steps, now, illum } = state.sky;
+  const moonLimit = 10 + 35 * illum;   // full Moon: stay 45° away; thin crescent: ~10°
+  let run = null;
+  for (const st of steps) {
+    if (st.t < now - STEP) continue;
+    const alt = altitude(o.ra, o.dec, st.t);
+    const sep = separation(o, st.moon);
+    const good = st.dark && alt > MIN_ALT && (st.cloud == null || st.cloud <= MAX_CLOUD) && !(st.moonUp && sep < moonLimit);
+    if (good) {
+      run ??= { start: st.t, n: 0, best: null };
+      run.n++;
+      run.end = st.t + STEP;
+      if (!run.best || alt > run.best.alt) run.best = { t: st.t, alt, cloud: st.cloud, sep };
+    } else if (run) {
+      if (run.n >= MIN_STEPS) break;
+      run = null;
+    }
+  }
+  return run && run.n >= MIN_STEPS ? run : null;
+}
+const isTonight = (p) => p && nightKey(p.start) === tonightKey();
 
 // ---------- Rendering ----------
 const fmtTime = (s) => s >= 3600 ? `${(s / 3600).toFixed(1)} h` : `${Math.round(s / 60)} min`;
@@ -189,21 +297,40 @@ function renderChrome() {
   const title = state.config.title || "Messier Marathon";
   document.title = title;
   $("#title").textContent = title;
-  $("#subtitle").textContent = t("subtitle") + (state.config.telescope ? t("with") + state.config.telescope : "");
-  $("#lang").textContent = t("other");
-  document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = t(el.dataset.i18n); });
+  $("#subtitle").textContent = tr("subtitle") + (state.config.telescope ? tr("with") + state.config.telescope : "");
+  $("#lang").textContent = tr("other");
+  document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = tr(el.dataset.i18n); });
   $("#filters").innerHTML = ["all", "done", "todo", "tonight"].map((f) =>
-    `<button class="chip" data-f="${f}" aria-pressed="${state.filter === f}">${t(f)}</button>`).join("") +
-    `<input type="search" id="q" placeholder="${t("search")}" value="${state.q.replace(/"/g, "&quot;")}">`;
-  $("#types").innerHTML = `<button class="chip" data-t="" aria-pressed="${!state.type}">${t("allTypes")}</button>` +
+    `<button class="chip" data-f="${f}" aria-pressed="${state.filter === f}">${tr(f)}</button>`).join("") +
+    `<input type="search" id="q" placeholder="${tr("search")}" value="${state.q.replace(/"/g, "&quot;")}">`;
+  $("#types").innerHTML = `<button class="chip" data-t="" aria-pressed="${!state.type}">${tr("allTypes")}</button>` +
     Object.entries(TYPES).map(([k, v]) =>
       `<button class="chip" data-t="${k}" aria-pressed="${state.type === k}">${v[state.lang]}</button>`).join("");
-  $("#footer").innerHTML = state.config.repo ? `<a href="${state.config.repo}">${t("footer")}</a>` : "";
+  $("#footer").innerHTML = state.config.repo ? `<a href="${state.config.repo}">${tr("footer")}</a>` : "";
+}
+
+function renderSky() {
+  if (!state.sky) return;
+  const { steps, illum, phase } = state.sky;
+  const key = tonightKey();
+  const night = steps.filter((s) => s.dark && nightKey(s.t) === key);
+  const hours = night.filter((s) => local(s.t).getUTCMinutes() === 0);
+  const wx = { loading: tr("wxLoading"), fail: tr("wxFail"), ok: tr("wxOk") }[state.wx];
+  $("#sky").innerHTML = `
+    <div class="item"><span class="big">${MOON_ICONS[phase]}</span>
+      <div><b>${tr("phases")[phase]}</b><br><small>${fill(tr("lit"), { p: Math.round(illum * 100) })}</small></div></div>
+    <div class="item"><div><small>${tr("dark")}</small><br>
+      <b>${night.length ? `${hhmm(night[0].t)} – ${hhmm(night.at(-1).t + STEP)}` : tr("noDark")}</b></div></div>
+    ${hours.length ? `<div><small>${tr("clouds")}</small><div class="clouds">${hours.map((s) => `
+      <div class="hr"><div class="bar ${s.cloud == null ? "na" : ""}" style="--c:${s.cloud ?? 0}"></div>
+        <small>${hhmm(s.t).slice(0, 2)}</small><small>${s.cloud == null ? "–" : s.cloud + "%"}</small></div>`).join("")}
+    </div></div>` : ""}
+    <small class="wx">${wx}</small>`;
 }
 
 function render() {
   const objs = state.data.objects;
-  MESSIER.forEach((o) => { o.shot = objs[o.m]; o.tn = tonight(o); });
+  MESSIER.forEach((o) => { o.shot = objs[o.m]; });
   const done = MESSIER.filter((o) => o.shot);
   $("#count").textContent = done.length;
   $("#ring").style.setProperty("--p", (done.length / 110) * 100);
@@ -211,55 +338,72 @@ function render() {
   const sessions = done.reduce((s, o) => s + o.shot.sessions.length, 0);
   const nights = new Set(done.flatMap((o) => o.shot.sessions.map((x) => x.date).filter(Boolean))).size;
   $("#stats").innerHTML = [
-    [t("shot"), done.length], [t("left"), 110 - done.length], [t("total"), fmtTime(total)],
-    [t("sessions"), sessions], [t("nights"), nights], [t("tonightN"), MESSIER.filter((o) => !o.shot && o.tn.ok).length],
+    [tr("shot"), done.length], [tr("left"), 110 - done.length], [tr("total"), fmtTime(total)],
+    [tr("sessions"), sessions], [tr("nights"), nights],
+    [tr("tonightN"), MESSIER.filter((o) => !o.shot && isTonight(o.plan)).length],
   ].map(([k, v]) => `<span class="stat">${k} <b>${v}</b></span>`).join("");
 
   const q = state.q.trim().toLowerCase().replace(/^m(essier)?\s*/, "");
   const list = MESSIER.filter((o) => {
     if (state.filter === "done" && !o.shot) return false;
     if (state.filter === "todo" && o.shot) return false;
-    if (state.filter === "tonight" && (o.shot || !o.tn.ok)) return false;
+    if (state.filter === "tonight" && (o.shot || !isTonight(o.plan))) return false;
     if (state.type && o.type !== state.type) return false;
     if (q && !(String(o.m) === q || [o.en, o.zh, o.con, CONSTELLATIONS_ZH[o.con] || ""]
       .some((s) => s.toLowerCase().includes(q)))) return false;
     return true;
   });
-  if (state.filter === "tonight") list.sort((a, b) => a.tn.bestAt - b.tn.bestAt);
+  if (state.filter === "tonight") list.sort((a, b) => a.plan.best.t - b.plan.best.t);
 
   $("#grid").innerHTML = list.length ? list.map((o) => {
     const img = o.shot?.image ? `style="background-image:url('${o.shot.image}')"` : "";
     const sub = o.shot && o.shot.sessions.length
       ? `${I18N[state.lang].nSessions(o.shot.sessions.length)}${sumIntegration(o) ? " · " + fmtTime(sumIntegration(o)) : ""}`
-      : `${TYPES[o.type][state.lang]} · ${o.mag} ${t("mag")}`;
+      : `${TYPES[o.type][state.lang]} · ${o.mag} ${tr("mag")}`;
+    const p = o.plan;
     return `<button class="card ${o.shot ? "done" : ""}" data-m="${o.m}">
       <div class="thumb" ${img}>${img ? "" : "M" + o.m}
-        ${o.shot ? `<span class="badge ok">${t("badgeShot")}</span>` : ""}
-        ${!o.shot && o.tn.ok ? `<span class="badge tn">${t("badgeTonight")}</span>` : ""}
+        ${o.shot ? `<span class="badge ok">${tr("badgeShot")}</span>` : ""}
+        ${!o.shot && p ? `<span class="badge tn ${isTonight(p) ? "now" : ""}">${nightLabel(p.best.t)} ${hhmm(p.best.t)}</span>` : ""}
       </div>
       <div class="info"><div class="m">M${o.m}<span>${nameOf(o)}</span></div>
         <div class="meta">${conOf(o)} · ${sub}</div></div>
     </button>`;
-  }).join("") : `<div class="empty">${t("empty")}</div>`;
+  }).join("") : `<div class="empty">${tr("empty")}</div>`;
+}
+
+function planText(p) {
+  if (!p) return tr("noWindow");
+  const b = p.best;
+  return `<b>${tr("next")}：${nightLabel(p.start)} ${hhmm(p.start)} – ${hhmm(p.end)}</b> · ${fill(tr("best"), { t: hhmm(b.t) })}<br>
+    <small class="sub">${fill(tr("detail"), { a: b.alt.toFixed(0), c: b.cloud == null ? "?" : b.cloud + "%", s: b.sep.toFixed(0) })}</small>`;
 }
 
 function openDetail(m) {
   const o = MESSIER.find((x) => x.m === m);
   const s = o.shot;
   const dash = (v, unit = "") => v == null ? "—" : v + unit;
-  const rows = s ? s.sessions.map((x, i) => `<tr><td>${x.date ? x.date + (x.time ? " " + x.time : "") : i + 1}</td><td>${dash(x.camera)}</td><td>${dash(x.exp, "s")}</td>
-    <td>${dash(x.gain)}</td><td>${x.stacked || "—"} / ${x.frames}</td><td>${x.integration ? fmtTime(x.integration) : "—"}</td></tr>`).join("") : "";
+  const rows = s ? s.sessions.map((x, i) => `<tr><td>${x.date ? x.date + (x.time ? " " + x.time : "") : i + 1}</td>
+    <td>${dash(x.camera)}</td><td>${dash(x.exp, "s")}</td><td>${dash(x.gain)}</td>
+    <td>${x.stacked || "—"} / ${x.frames}</td><td>${x.integration ? fmtTime(x.integration) : "—"}</td></tr>`).join("") : "";
   $("#dlg").innerHTML = `${s?.image ? `<img src="${s.image}" alt="M${m}">` : ""}
     <div class="dlg">
-      <button class="chip close" onclick="dlg.close()">${t("close")}</button>
+      <button class="chip close" onclick="dlg.close()">${tr("close")}</button>
       <h2>M${m} ${nameOf(o)}</h2>
-      <div class="sub">${TYPES[o.type][state.lang]} · ${conOf(o)} · ${o.mag} ${t("mag")} ·
-        ${t("ra")} ${o.ra.toFixed(2)}h · ${t("dec")} ${o.dec.toFixed(1)}°</div>
-      <div class="sub">${fill(t("tonightMax"), { a: o.tn.best.toFixed(0) })}${o.tn.ok ? t("good") : ""}</div>
-      ${s && s.sessions.length ? `<div class="tablewrap"><table><tr>${t("cols").map((c) => `<th>${c}</th>`).join("")}</tr>${rows}</table></div>`
-          : s ? "" : `<p class="sub">${t("notYet")}</p>`}
+      <div class="sub">${TYPES[o.type][state.lang]} · ${conOf(o)} · ${o.mag} ${tr("mag")} ·
+        ${tr("ra")} ${o.ra.toFixed(2)}h · ${tr("dec")} ${o.dec.toFixed(1)}°</div>
+      <div class="plan">${planText(o.plan)}</div>
+      ${s && s.sessions.length ? `<div class="tablewrap"><table><tr>${tr("cols").map((c) => `<th>${c}</th>`).join("")}</tr>${rows}</table></div>`
+          : s ? "" : `<p class="sub">${tr("notYet")}</p>`}
     </div>`;
   $("#dlg").showModal();
+}
+
+function refresh() {
+  buildSky();
+  MESSIER.forEach((o) => { o.plan = plan(o); });
+  renderSky();
+  render();
 }
 
 // ---------- Events ----------
@@ -273,39 +417,45 @@ $("#types").addEventListener("click", (e) => {
   state.type = b.dataset.t; renderChrome(); render();
 });
 $("#lang").addEventListener("click", () => {
-  state.lang = state.lang === "en" ? "zh" : "en"; store.set("lang", state.lang); renderChrome(); render();
+  state.lang = state.lang === "en" ? "zh" : "en"; store.set("lang", state.lang); renderChrome(); renderSky(); render();
 });
 $("#grid").addEventListener("click", (e) => { const c = e.target.closest(".card"); if (c) openDetail(+c.dataset.m); });
 $("#dlg").addEventListener("click", (e) => { if (e.target.id === "dlg") e.target.close(); });
-for (const k of ["lat", "lon"]) {
-  $("#" + k).addEventListener("change", (e) => { state[k] = +e.target.value; store.set(k, state[k]); render(); });
-}
 
+let siteTimer;
+function setSite(lat, lon) {
+  state.lat = lat; state.lon = lon;
+  $("#lat").value = lat; $("#lon").value = lon;
+  store.set("lat", lat); store.set("lon", lon);
+  state.tz = Math.round(lon / 15) * HOUR;
+  state.weather = null;
+  refresh();
+  clearTimeout(siteTimer);
+  siteTimer = setTimeout(loadWeather, 600);
+}
+for (const k of ["lat", "lon"]) {
+  $("#" + k).addEventListener("change", () => setSite(+$("#lat").value, +$("#lon").value));
+}
 // Browser geolocation (needs HTTPS; GitHub Pages is). Rounded to 0.1° — plenty for altitude maths.
 $("#locate").addEventListener("click", () => {
   const msg = $("#locmsg");
-  if (!navigator.geolocation) { msg.textContent = t("locFail"); return; }
-  msg.textContent = t("locating");
+  if (!navigator.geolocation) { msg.textContent = tr("locFail"); return; }
+  msg.textContent = tr("locating");
   navigator.geolocation.getCurrentPosition((pos) => {
-    for (const [k, v] of [["lat", pos.coords.latitude], ["lon", pos.coords.longitude]]) {
-      state[k] = Math.round(v * 10) / 10; $("#" + k).value = state[k]; store.set(k, state[k]);
-    }
-    msg.textContent = t("locOk");
-    render();
-  }, () => { msg.textContent = t("locFail"); }, { timeout: 15000, maximumAge: 3600000 });
+    setSite(Math.round(pos.coords.latitude * 10) / 10, Math.round(pos.coords.longitude * 10) / 10);
+    msg.textContent = tr("locOk");
+  }, () => { msg.textContent = tr("locFail"); }, { timeout: 15000, maximumAge: 3600000 });
 });
 
-const getJSON =(url, fallback) => fetch(url, { cache: "no-store" }).then((r) => r.ok ? r.json() : fallback).catch(() => fallback);
+const getJSON = (url, fallback) => fetch(url, { cache: "no-store" }).then((r) => r.ok ? r.json() : fallback).catch(() => fallback);
 Promise.all([getJSON("config.json", {}), getJSON("data.json", { objects: {} })]).then(([config, data]) => {
   state.config = config;
   state.data = data;
   state.lang = store.get("lang", config.default_language === "zh" ? "zh" : "en");
-  state.lat = store.get("lat", config.latitude ?? 0);
-  state.lon = store.get("lon", config.longitude ?? 0);
-  $("#lat").value = state.lat;
-  $("#lon").value = state.lon;
   renderChrome();
-  render();
+  setSite(store.get("lat", config.latitude ?? 0), store.get("lon", config.longitude ?? 0));
+  setInterval(refresh, 10 * 60000);       // keep "now" current
+  setInterval(loadWeather, 60 * 60000);   // hourly forecast refresh
 });
 </script>
 </body>

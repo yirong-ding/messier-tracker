@@ -4,8 +4,11 @@ A static progress page for photographing all 110 Messier objects. It runs on Git
 The page is in English and can be switched to Chinese.
 
 - Progress ring, total integration time and session count
-- Filter by shot, not shot, or **doable tonight** (worked out from your latitude and longitude), and by object type
-- Thumbnails and per-session details (date, camera, exposure, gain, frames) for objects you have shot. No times are shown for objects not yet shot.
+- Tonight's sky panel: Moon phase and brightness, dark-sky hours and an hourly cloud forecast from [Open-Meteo](https://open-meteo.com/) (free, no API key)
+- A **recommended time** for every object: the earliest stretch (at least 1 hour) in the next 3 nights when it's dark, the object is above 30°, cloud cover is at most 40% and the Moon isn't too close
+- Filter by shot, not shot, or **doable tonight**, and by object type
+- A "use my location" button; the location is only saved in the viewer's browser
+- Thumbnails and per-session details (date, camera, exposure, gain, frames) for objects you have shot
 
 ## Use it yourself
 

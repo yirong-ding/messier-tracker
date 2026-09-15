@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>梅西耶马拉松 · 110</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔭</text></svg>">
+<style>
+  :root {
+    --bg: #0b0e17; --panel: #141a28; --line: #232b3e; --text: #e6e9f2; --muted: #8a93a8;
+    --accent: #7cc4ff; --done: #5ee6a8; --tonight: #ffcf6b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 14px/1.5 -apple-system, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 24px 16px 48px; }
+  header { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
+  .ring { --p: 0; width: 112px; height: 112px; border-radius: 50%; flex: none;
+    background: conic-gradient(var(--done) calc(var(--p) * 1%), var(--line) 0);
+    display: grid; place-items: center; }
+  .ring > div { width: 90px; height: 90px; border-radius: 50%; background: var(--bg);
+    display: grid; place-items: center; text-align: center; }
+  .ring b { font-size: 26px; line-height: 1; }
+  .ring small { color: var(--muted); font-size: 12px; }
+  h1 { margin: 0 0 4px; font-size: 24px; }
+  .sub { color: var(--muted); }
+  .stats { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; font-size: 13px; }
+  .stat b { color: var(--done); }
+  .bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+  .chip { background: var(--panel); border: 1px solid var(--line); color: var(--text); border-radius: 999px;
+    padding: 5px 12px; cursor: pointer; font: inherit; }
+  .chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+  input[type=search], input[type=number] { background: var(--panel); border: 1px solid var(--line); color: var(--text);
+    border-radius: 8px; padding: 6px 10px; font: inherit; }
+  input[type=search] { flex: 1; min-width: 160px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+    cursor: pointer; transition: transform .1s, border-color .1s; text-align: left; color: inherit; font: inherit; padding: 0; }
+  .card:hover { transform: translateY(-2px); border-color: var(--accent); }
+  .card.done { border-color: color-mix(in srgb, var(--done) 50%, var(--line)); }
+  .thumb { aspect-ratio: 4 / 3; background: #05070c center / cover no-repeat; display: grid; place-items: center;
+    color: #2e3850; font-size: 28px; font-weight: 700; position: relative; }
+  .badge { position: absolute; top: 6px; right: 6px; font-size: 11px; padding: 1px 7px; border-radius: 999px;
+    background: rgba(0,0,0,.6); }
+  .badge.ok { color: var(--done); }
+  .badge.tn { color: var(--tonight); left: 6px; right: auto; }
+  .info { padding: 8px 10px; }
+  .info .m { font-weight: 700; font-size: 15px; }
+  .info .m span { font-weight: 400; color: var(--muted); font-size: 12px; margin-left: 4px; }
+  .info .meta { color: var(--muted); font-size: 12px; }
+  dialog { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 12px;
+    padding: 0; width: min(640px, calc(100vw - 32px)); }
+  dialog::backdrop { background: rgba(0,0,0,.7); }
+  dialog img { width: 100%; display: block; }
+  .dlg { padding: 16px 20px 20px; }
+  .dlg h2 { margin: 0 0 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+  th, td { text-align: left; padding: 5px 6px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 400; }
+  .tablewrap { overflow-x: auto; }
+  .close { float: right; }
+  details { margin-top: 24px; color: var(--muted); }
+  details label { margin-right: 12px; }
+  details input { width: 90px; }
+  .empty { color: var(--muted); padding: 40px; text-align: center; grid-column: 1 / -1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="ring" id="ring"><div><span><b id="count">0</b><br><small>/ 110</small></span></div></div>
+    <div>
+      <h1>梅西耶马拉松</h1>
+      <div class="sub">DWARF 拍摄进度 · 数据更新于 <span id="updated">—</span></div>
+      <div class="stats" id="stats"></div>
+    </div>
+  </header>
+
+  <div class="bar" id="filters">
+    <button class="chip" data-f="all" aria-pressed="true">全部</button>
+    <button class="chip" data-f="done" aria-pressed="false">已拍</button>
+    <button class="chip" data-f="todo" aria-pressed="false">未拍</button>
+    <button class="chip" data-f="tonight" aria-pressed="false">🌙 今晚可拍（未拍）</button>
+    <input type="search" id="q" placeholder="搜索 M 编号 / 名称 / 星座">
+  </div>
+  <div class="bar" id="types"></div>
+
+  <div class="grid" id="grid"></div>
+
+  <details>
+    <summary>观测地点（用于计算“今晚可拍”）</summary>
+    <p>
+      <label>纬度 <input type="number" id="lat" step="0.1"></label>
+      <label>经度 <input type="number" id="lon" step="0.1"></label>
+    </p>
+    <p>规则：今晚 20:00–次日 04:00 之间，高度角超过 30° 的时间不少于 2 小时。没有考虑月光和本地遮挡。</p>
+  </details>
+</div>
+
+<dialog id="dlg"></dialog>
+
+<script src="messier.js"></script>
+<script>
+const $ = (s) => document.querySelector(s);
+const store = {
+  get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+const state = { filter: "all", type: "", q: "", data: { objects: {} },
+  lat: store.get("lat", 31.2), lon: store.get("lon", 121.5) };
+
+// ---------- 今晚可见性 ----------
+function lstHours(date, lon) {
+  const jd = date.getTime() / 86400000 + 2440587.5;
+  const gmst = 18.697374558 + 24.06570982441908 * (jd - 2451545.0);
+  return (((gmst + lon / 15) % 24) + 24) % 24;
+}
+function altitude(obj, date) {
+  const rad = Math.PI / 180;
+  const ha = (lstHours(date, state.lon) - obj.ra) * 15 * rad;
+  const lat = state.lat * rad, dec = obj.dec * rad;
+  return Math.asin(Math.sin(lat) * Math.sin(dec) + Math.cos(lat) * Math.cos(dec) * Math.cos(ha)) / rad;
+}
+// 按观测地经度推算时区（中国 ≈ UTC+8），不依赖浏览器时区
+const tzMs = () => Math.round(state.lon / 15) * 3600000;
+function nightStart() {
+  const local = new Date(Date.now() + tzMs());
+  let start = Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate(), 20);
+  if (local.getUTCHours() < 12) start -= 86400000;   // 凌晨查看时，“今晚”指昨晚 20:00 开始的这一夜
+  return new Date(start - tzMs());
+}
+function tonight(obj) {
+  const start = nightStart();
+  let good = 0, best = -90, bestAt = null;
+  for (let i = 0; i <= 48; i++) {           // 每 10 分钟采样，共 8 小时
+    const t = new Date(start.getTime() + i * 600000);
+    const a = altitude(obj, t);
+    if (a > 30) good++;
+    if (a > best) { best = a; bestAt = t; }
+  }
+  return { ok: good >= 12, best, bestAt };
+}
+
+// ---------- 渲染 ----------
+const fmtTime = (s) => s >= 3600 ? `${(s / 3600).toFixed(1)} h` : `${Math.round(s / 60)} min`;
+const hhmm = (d) => new Date(d.getTime() + tzMs()).toISOString().slice(11, 16);
+
+function render() {
+  const objs = state.data.objects;
+  MESSIER.forEach((o) => { o.shot = objs[o.m]; o.tn = tonight(o); });
+  const done = MESSIER.filter((o) => o.shot);
+  $("#count").textContent = done.length;
+  $("#ring").style.setProperty("--p", (done.length / 110) * 100);
+  const total = done.reduce((s, o) => s + o.shot.sessions.reduce((a, x) => a + x.integration, 0), 0);
+  const nights = new Set(done.flatMap((o) => o.shot.sessions.map((x) => x.date))).size;
+  $("#stats").innerHTML = [
+    `已拍 <b>${done.length}</b>`, `剩余 <b>${110 - done.length}</b>`,
+    `总积分 <b>${fmtTime(total)}</b>`, `拍摄日 <b>${nights}</b>`,
+    `今晚可补 <b>${MESSIER.filter((o) => !o.shot && o.tn.ok).length}</b>`,
+  ].map((s) => `<span class="stat">${s}</span>`).join("");
+
+  const q = state.q.trim().toLowerCase().replace(/^m\s*/, "");
+  const list = MESSIER.filter((o) => {
+    if (state.filter === "done" && !o.shot) return false;
+    if (state.filter === "todo" && o.shot) return false;
+    if (state.filter === "tonight" && (o.shot || !o.tn.ok)) return false;
+    if (state.type && o.type !== state.type) return false;
+    if (q && !(String(o.m) === q || o.cn.toLowerCase().includes(q) || o.con.includes(q))) return false;
+    return true;
+  });
+  if (state.filter === "tonight") list.sort((a, b) => a.tn.bestAt - b.tn.bestAt);
+
+  $("#grid").innerHTML = list.length ? list.map((o) => {
+    const img = o.shot?.image ? `style="background-image:url('${o.shot.image}')"` : "";
+    const sub = o.shot
+      ? `${o.shot.sessions.length} 组 · ${fmtTime(o.shot.sessions.reduce((a, x) => a + x.integration, 0))}`
+      : `${TYPES[o.type]} · ${o.mag}等`;
+    return `<button class="card ${o.shot ? "done" : ""}" data-m="${o.m}">
+      <div class="thumb" ${img}>${img ? "" : "M" + o.m}
+        ${o.shot ? '<span class="badge ok">✓ 已拍</span>' : ""}
+        ${!o.shot && o.tn.ok ? `<span class="badge tn">今晚 ${hhmm(o.tn.bestAt)}</span>` : ""}
+      </div>
+      <div class="info"><div class="m">M${o.m}<span>${o.cn}</span></div>
+        <div class="meta">${o.con} · ${sub}</div></div>
+    </button>`;
+  }).join("") : `<div class="empty">没有符合条件的天体</div>`;
+}
+
+function openDetail(m) {
+  const o = MESSIER.find((x) => x.m === m);
+  const s = o.shot;
+  const rows = s ? s.sessions.map((x) => `<tr><td>${x.date} ${x.time}</td><td>${x.camera}</td>
+    <td>${x.exp}s</td><td>${x.gain}</td><td>${x.stacked || "—"} / ${x.frames}</td><td>${fmtTime(x.integration)}</td></tr>`).join("") : "";
+  $("#dlg").innerHTML = `${s?.image ? `<img src="${s.image}" alt="M${m}">` : ""}
+    <div class="dlg">
+      <button class="chip close" onclick="dlg.close()">关闭</button>
+      <h2>M${m} ${o.cn}</h2>
+      <div class="sub">${TYPES[o.type]} · ${o.con} · 星等 ${o.mag} · 赤经 ${o.ra.toFixed(2)}h 赤纬 ${o.dec.toFixed(1)}°</div>
+      <div class="sub">今晚最高 ${o.tn.best.toFixed(0)}°（约 ${hhmm(o.tn.bestAt)}）${o.tn.ok ? " · ✅ 适合拍摄" : ""}</div>
+      ${s ? `<div class="tablewrap"><table><tr><th>时间</th><th>相机</th><th>曝光</th><th>增益</th><th>叠加/总帧</th><th>积分</th></tr>${rows}</table></div>`
+          : `<p class="sub">还没拍 🔭</p>`}
+    </div>`;
+  $("#dlg").showModal();
+}
+
+// ---------- 事件 ----------
+$("#types").innerHTML = `<button class="chip" data-t="" aria-pressed="true">全部类型</button>` +
+  Object.entries(TYPES).map(([k, v]) => `<button class="chip" data-t="${k}" aria-pressed="false">${v}</button>`).join("");
+$("#filters").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-f]"); if (!b) return;
+  state.filter = b.dataset.f;
+  $("#filters").querySelectorAll("[data-f]").forEach((x) => x.setAttribute("aria-pressed", x === b));
+  render();
+});
+$("#types").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-t]"); if (!b) return;
+  state.type = b.dataset.t;
+  $("#types").querySelectorAll("[data-t]").forEach((x) => x.setAttribute("aria-pressed", x === b));
+  render();
+});
+$("#q").addEventListener("input", (e) => { state.q = e.target.value; render(); });
+$("#grid").addEventListener("click", (e) => { const c = e.target.closest(".card"); if (c) openDetail(+c.dataset.m); });
+$("#dlg").addEventListener("click", (e) => { if (e.target.id === "dlg") e.target.close(); });
+for (const k of ["lat", "lon"]) {
+  $("#" + k).value = state[k];
+  $("#" + k).addEventListener("change", (e) => { state[k] = +e.target.value; store.set(k, state[k]); render(); });
+}
+
+render();
+fetch("data.json", { cache: "no-store" }).then((r) => r.json()).then((d) => {
+  state.data = d; $("#updated").textContent = d.updated; render();
+}).catch(() => { $("#updated").textContent = "（未找到 data.json）"; });
+</script>
+</body>
+</html>

@@ -92,6 +92,8 @@
     <p>
       <label><span data-i18n="lat"></span> <input type="number" id="lat" step="0.1"></label>
       <label><span data-i18n="lon"></span> <input type="number" id="lon" step="0.1"></label>
+      <button class="chip" id="locate" data-i18n="locate"></button>
+      <span id="locmsg"></span>
     </p>
     <p data-i18n="rule"></p>
   </details>
@@ -108,6 +110,8 @@ const I18N = {
     shot: "Shot", left: "Remaining", total: "Integration", sessions: "Sessions", nights: "Nights", tonightN: "Doable tonight",
     all: "All", done: "Shot", todo: "To do", tonight: "🌙 Tonight (to do)", search: "Search M number, name or constellation",
     allTypes: "All types", site: "Observing site (used for “tonight”)", lat: "Latitude", lon: "Longitude",
+    locate: "📍 Use my location", locating: "Locating…", locOk: "Done. Saved only in this browser.",
+    locFail: "Couldn't get your location. Check the browser's location permission.",
     rule: "An object is doable tonight if it stays above 30° for at least 2 hours between 20:00 and 04:00 local time. Moonlight and local obstructions are not considered.",
     empty: "No matching objects", close: "Close", notYet: "Not shot yet 🔭",
     tonightMax: "Highest tonight: {a}°", good: " · ✅ good tonight",
@@ -121,6 +125,8 @@ const I18N = {
     shot: "已拍", left: "剩余", total: "总积分", sessions: "拍摄组数", nights: "拍摄日", tonightN: "今晚可补",
     all: "全部", done: "已拍", todo: "未拍", tonight: "🌙 今晚可拍（未拍）", search: "搜索 M 编号 / 名称 / 星座",
     allTypes: "全部类型", site: "观测地点（用于计算“今晚可拍”）", lat: "纬度", lon: "经度",
+    locate: "📍 获取我的位置", locating: "定位中…", locOk: "已更新，只保存在这个浏览器里。",
+    locFail: "没能获取位置，请检查浏览器的定位权限。",
     rule: "规则：当地时间 20:00 到次日 04:00 之间，高度角超过 30° 的时间不少于 2 小时。没有考虑月光和本地遮挡。",
     empty: "没有符合条件的天体", close: "关闭", notYet: "还没拍 🔭",
     tonightMax: "今晚最高 {a}°", good: " · ✅ 适合拍摄",
@@ -275,7 +281,21 @@ for (const k of ["lat", "lon"]) {
   $("#" + k).addEventListener("change", (e) => { state[k] = +e.target.value; store.set(k, state[k]); render(); });
 }
 
-const getJSON = (url, fallback) => fetch(url, { cache: "no-store" }).then((r) => r.ok ? r.json() : fallback).catch(() => fallback);
+// Browser geolocation (needs HTTPS; GitHub Pages is). Rounded to 0.1° — plenty for altitude maths.
+$("#locate").addEventListener("click", () => {
+  const msg = $("#locmsg");
+  if (!navigator.geolocation) { msg.textContent = t("locFail"); return; }
+  msg.textContent = t("locating");
+  navigator.geolocation.getCurrentPosition((pos) => {
+    for (const [k, v] of [["lat", pos.coords.latitude], ["lon", pos.coords.longitude]]) {
+      state[k] = Math.round(v * 10) / 10; $("#" + k).value = state[k]; store.set(k, state[k]);
+    }
+    msg.textContent = t("locOk");
+    render();
+  }, () => { msg.textContent = t("locFail"); }, { timeout: 15000, maximumAge: 3600000 });
+});
+
+const getJSON =(url, fallback) => fetch(url, { cache: "no-store" }).then((r) => r.ok ? r.json() : fallback).catch(() => fallback);
 Promise.all([getJSON("config.json", {}), getJSON("data.json", { objects: {} })]).then(([config, data]) => {
   state.config = config;
   state.data = data;

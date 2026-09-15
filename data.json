@@ -1,14 +1,10 @@
 {
- "updated": "2026-09-14 22:05",
  "objects": {
   "31": {
    "image": "img/M31.jpg",
    "sessions": [
     {
-     "folder": "DWARF_RAW_TELE_M 31_EXP_15_GAIN_60_2026-01-17-19-14-25-848",
      "camera": "TELE",
-     "date": "2026-01-17",
-     "time": "19:14",
      "exp": 15.0,
      "gain": 60,
      "frames": 5,
@@ -16,10 +12,7 @@
      "integration": 45
     },
     {
-     "folder": "DWARF_RAW_TELE_M 31_EXP_15_GAIN_60_2026-01-17-19-18-49-156",
      "camera": "TELE",
-     "date": "2026-01-17",
-     "time": "19:18",
      "exp": 15.0,
      "gain": 60,
      "frames": 5,
@@ -27,10 +20,7 @@
      "integration": 45
     },
     {
-     "folder": "DWARF_RAW_TELE_M 31_EXP_15_GAIN_60_2026-01-17-19-22-00-747",
      "camera": "TELE",
-     "date": "2026-01-17",
-     "time": "19:22",
      "exp": 15.0,
      "gain": 60,
      "frames": 101,
@@ -43,10 +33,7 @@
    "image": "img/M42.jpg",
    "sessions": [
     {
-     "folder": "DWARF_RAW_TELE_M 42_EXP_30_GAIN_100_2026-01-21-20-38-41-315",
      "camera": "TELE",
-     "date": "2026-01-21",
-     "time": "20:38",
      "exp": 30.0,
      "gain": 100,
      "frames": 121,
@@ -59,21 +46,7 @@
    "image": "img/M44.jpg",
    "sessions": [
     {
-     "folder": "DWARF_RAW_TELE_M 44_EXP_60_GAIN_120_2026-01-21-22-01-51-465",
      "camera": "TELE",
-     "date": "2026-01-21",
-     "time": "22:01",
-     "exp": 60.0,
-     "gain": 120,
-     "frames": 3,
-     "stacked": 1,
-     "integration": 60
-    },
-    {
-     "folder": "DWARF_RAW_TELE_M 44_EXP_30_GAIN_60_2026-01-21-22-04-54-416",
-     "camera": "TELE",
-     "date": "2026-01-21",
-     "time": "22:04",
      "exp": 30.0,
      "gain": 60,
      "frames": 4,
@@ -81,15 +54,20 @@
      "integration": 30
     },
     {
-     "folder": "DWARF_RAW_TELE_M 44_EXP_30_GAIN_60_2026-01-21-22-07-39-586",
      "camera": "TELE",
-     "date": "2026-01-21",
-     "time": "22:07",
      "exp": 30.0,
      "gain": 60,
      "frames": 121,
      "stacked": 106,
      "integration": 3180
+    },
+    {
+     "camera": "TELE",
+     "exp": 60.0,
+     "gain": 120,
+     "frames": 3,
+     "stacked": 1,
+     "integration": 60
     }
    ]
   },
@@ -97,32 +75,7 @@
    "image": "img/M45.jpg",
    "sessions": [
     {
-     "folder": "DWARF_RAW_TELE_M 45_EXP_30_GAIN_60_2026-01-19-20-59-05-538",
      "camera": "TELE",
-     "date": "2026-01-19",
-     "time": "20:59",
-     "exp": 30.0,
-     "gain": 60,
-     "frames": 142,
-     "stacked": 107,
-     "integration": 3210
-    },
-    {
-     "folder": "DWARF_RAW_TELE_M 45_EXP_30_GAIN_60_2026-01-19-22-21-39-904",
-     "camera": "TELE",
-     "date": "2026-01-19",
-     "time": "22:21",
-     "exp": 30.0,
-     "gain": 60,
-     "frames": 13,
-     "stacked": 7,
-     "integration": 210
-    },
-    {
-     "folder": "DWARF_RAW_TELE_M 45_EXP_10_GAIN_50_2026-01-19-22-31-50-874",
-     "camera": "TELE",
-     "date": "2026-01-19",
-     "time": "22:31",
      "exp": 10.0,
      "gain": 50,
      "frames": 9,
@@ -130,10 +83,23 @@
      "integration": 40
     },
     {
-     "folder": "DWARF_RAW_TELE_M 45_EXP_30_GAIN_60_2026-01-19-22-36-41-147",
      "camera": "TELE",
-     "date": "2026-01-19",
-     "time": "22:36",
+     "exp": 30.0,
+     "gain": 60,
+     "frames": 142,
+     "stacked": 107,
+     "integration": 3210
+    },
+    {
+     "camera": "TELE",
+     "exp": 30.0,
+     "gain": 60,
+     "frames": 13,
+     "stacked": 7,
+     "integration": 210
+    },
+    {
+     "camera": "TELE",
      "exp": 30.0,
      "gain": 60,
      "frames": 123,
@@ -146,21 +112,7 @@
    "image": "img/M109.jpg",
    "sessions": [
     {
-     "folder": "DWARF_RAW_TELE_M 109_EXP_15_GAIN_60_2026-05-28-22-35-01-563",
      "camera": "TELE",
-     "date": "2026-05-28",
-     "time": "22:35",
-     "exp": 15.0,
-     "gain": 60,
-     "frames": 5,
-     "stacked": 4,
-     "integration": 60
-    },
-    {
-     "folder": "DWARF_RAW_TELE_M 109_EXP_15_GAIN_40_2026-05-28-22-44-39-200",
-     "camera": "TELE",
-     "date": "2026-05-28",
-     "time": "22:44",
      "exp": 15.0,
      "gain": 40,
      "frames": 15,
@@ -168,15 +120,20 @@
      "integration": 165
     },
     {
-     "folder": "DWARF_RAW_TELE_M 109_EXP_15_GAIN_40_2026-05-28-22-51-09-951",
      "camera": "TELE",
-     "date": "2026-05-28",
-     "time": "22:51",
      "exp": 15.0,
      "gain": 40,
      "frames": 401,
      "stacked": 348,
      "integration": 5220
+    },
+    {
+     "camera": "TELE",
+     "exp": 15.0,
+     "gain": 60,
+     "frames": 5,
+     "stacked": 4,
+     "integration": 60
     }
    ]
   }

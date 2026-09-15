@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>梅西耶马拉松 · 110</title>
+<title>Messier Marathon</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔭</text></svg>">
 <style>
   :root {
@@ -12,9 +12,11 @@
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--text);
-    font: 14px/1.5 -apple-system, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif; }
+    font: 14px/1.5 -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif; }
+  a { color: var(--accent); }
   .wrap { max-width: 1200px; margin: 0 auto; padding: 24px 16px 48px; }
   header { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
+  header .text { flex: 1; min-width: 220px; }
   .ring { --p: 0; width: 112px; height: 112px; border-radius: 50%; flex: none;
     background: conic-gradient(var(--done) calc(var(--p) * 1%), var(--line) 0);
     display: grid; place-items: center; }
@@ -27,6 +29,7 @@
   .stats { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
   .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; font-size: 13px; }
   .stat b { color: var(--done); }
+  .lang { align-self: flex-start; }
   .bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
   .chip { background: var(--panel); border: 1px solid var(--line); color: var(--text); border-radius: 999px;
     padding: 5px 12px; cursor: pointer; font: inherit; }
@@ -42,11 +45,11 @@
   .thumb { aspect-ratio: 4 / 3; background: #05070c center / cover no-repeat; display: grid; place-items: center;
     color: #2e3850; font-size: 28px; font-weight: 700; position: relative; }
   .badge { position: absolute; top: 6px; right: 6px; font-size: 11px; padding: 1px 7px; border-radius: 999px;
-    background: rgba(0,0,0,.6); }
+    background: rgba(0,0,0,.6); font-weight: 400; }
   .badge.ok { color: var(--done); }
   .badge.tn { color: var(--tonight); left: 6px; right: auto; }
   .info { padding: 8px 10px; }
-  .info .m { font-weight: 700; font-size: 15px; }
+  .info .m { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .info .m span { font-weight: 400; color: var(--muted); font-size: 12px; margin-left: 4px; }
   .info .meta { color: var(--muted); font-size: 12px; }
   dialog { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 12px;
@@ -56,13 +59,14 @@
   .dlg { padding: 16px 20px 20px; }
   .dlg h2 { margin: 0 0 4px; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
-  th, td { text-align: left; padding: 5px 6px; border-bottom: 1px solid var(--line); }
+  th, td { text-align: left; padding: 5px 6px; border-bottom: 1px solid var(--line); white-space: nowrap; }
   th { color: var(--muted); font-weight: 400; }
   .tablewrap { overflow-x: auto; }
   .close { float: right; }
-  details { margin-top: 24px; color: var(--muted); }
+  details, footer { margin-top: 24px; color: var(--muted); }
   details label { margin-right: 12px; }
   details input { width: 90px; }
+  footer { font-size: 12px; }
   .empty { color: var(--muted); padding: 40px; text-align: center; grid-column: 1 / -1; }
 </style>
 </head>
@@ -70,47 +74,73 @@
 <div class="wrap">
   <header>
     <div class="ring" id="ring"><div><span><b id="count">0</b><br><small>/ 110</small></span></div></div>
-    <div>
-      <h1>梅西耶马拉松</h1>
-      <div class="sub">DWARF 拍摄进度 · 数据更新于 <span id="updated">—</span></div>
+    <div class="text">
+      <h1 id="title">Messier Marathon</h1>
+      <div class="sub" id="subtitle"></div>
       <div class="stats" id="stats"></div>
     </div>
+    <button class="chip lang" id="lang"></button>
   </header>
 
-  <div class="bar" id="filters">
-    <button class="chip" data-f="all" aria-pressed="true">全部</button>
-    <button class="chip" data-f="done" aria-pressed="false">已拍</button>
-    <button class="chip" data-f="todo" aria-pressed="false">未拍</button>
-    <button class="chip" data-f="tonight" aria-pressed="false">🌙 今晚可拍（未拍）</button>
-    <input type="search" id="q" placeholder="搜索 M 编号 / 名称 / 星座">
-  </div>
+  <div class="bar" id="filters"></div>
   <div class="bar" id="types"></div>
 
   <div class="grid" id="grid"></div>
 
   <details>
-    <summary>观测地点（用于计算“今晚可拍”）</summary>
+    <summary data-i18n="site"></summary>
     <p>
-      <label>纬度 <input type="number" id="lat" step="0.1"></label>
-      <label>经度 <input type="number" id="lon" step="0.1"></label>
+      <label><span data-i18n="lat"></span> <input type="number" id="lat" step="0.1"></label>
+      <label><span data-i18n="lon"></span> <input type="number" id="lon" step="0.1"></label>
     </p>
-    <p>规则：今晚 20:00–次日 04:00 之间，高度角超过 30° 的时间不少于 2 小时。没有考虑月光和本地遮挡。</p>
+    <p data-i18n="rule"></p>
   </details>
+  <footer id="footer"></footer>
 </div>
 
 <dialog id="dlg"></dialog>
 
 <script src="messier.js"></script>
 <script>
+const I18N = {
+  en: {
+    subtitle: "Photographing all 110 Messier objects", with: " with ",
+    shot: "Shot", left: "Remaining", total: "Integration", sessions: "Sessions", tonightN: "Doable tonight",
+    all: "All", done: "Shot", todo: "To do", tonight: "🌙 Tonight (to do)", search: "Search M number, name or constellation",
+    allTypes: "All types", site: "Observing site (used for “tonight”)", lat: "Latitude", lon: "Longitude",
+    rule: "An object is doable tonight if it stays above 30° for at least 2 hours between 20:00 and 04:00 local time. Moonlight and local obstructions are not considered.",
+    empty: "No matching objects", close: "Close", notYet: "Not shot yet 🔭",
+    tonightMax: "Highest tonight: {a}° around {t}", good: " · ✅ good tonight",
+    badgeShot: "✓ Shot", badgeTonight: "Tonight {t}", nSessions: (n) => `${n} session${n === 1 ? "" : "s"}`,
+    mag: "mag", ra: "RA", dec: "Dec",
+    cols: ["#", "Camera", "Exposure", "Gain", "Stacked / frames", "Integration"],
+    footer: "Want to track your own? Fork it on GitHub", other: "中文",
+  },
+  zh: {
+    subtitle: "拍摄全部 110 个梅西耶天体", with: " · ",
+    shot: "已拍", left: "剩余", total: "总积分", sessions: "拍摄组数", tonightN: "今晚可补",
+    all: "全部", done: "已拍", todo: "未拍", tonight: "🌙 今晚可拍（未拍）", search: "搜索 M 编号 / 名称 / 星座",
+    allTypes: "全部类型", site: "观测地点（用于计算“今晚可拍”）", lat: "纬度", lon: "经度",
+    rule: "规则：当地时间 20:00 到次日 04:00 之间，高度角超过 30° 的时间不少于 2 小时。没有考虑月光和本地遮挡。",
+    empty: "没有符合条件的天体", close: "关闭", notYet: "还没拍 🔭",
+    tonightMax: "今晚最高 {a}°（约 {t}）", good: " · ✅ 适合拍摄",
+    badgeShot: "✓ 已拍", badgeTonight: "今晚 {t}", nSessions: (n) => `${n} 组`,
+    mag: "等", ra: "赤经", dec: "赤纬",
+    cols: ["#", "相机", "曝光", "增益", "叠加 / 总帧", "积分"],
+    footer: "想记录自己的进度？在 GitHub 上 Fork", other: "English",
+  },
+};
+
 const $ = (s) => document.querySelector(s);
 const store = {
   get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
-const state = { filter: "all", type: "", q: "", data: { objects: {} },
-  lat: store.get("lat", 31.2), lon: store.get("lon", 121.5) };
+const state = { filter: "all", type: "", q: "", config: {}, data: { objects: {} }, lang: "en", lat: 0, lon: 0 };
+const t = (k) => I18N[state.lang][k];
+const fill = (s, vars) => s.replace(/\{(\w)\}/g, (_, k) => vars[k]);
 
-// ---------- 今晚可见性 ----------
+// ---------- Visibility tonight ----------
 function lstHours(date, lon) {
   const jd = date.getTime() / 86400000 + 2440587.5;
   const gmst = 18.697374558 + 24.06570982441908 * (jd - 2451545.0);
@@ -122,29 +152,49 @@ function altitude(obj, date) {
   const lat = state.lat * rad, dec = obj.dec * rad;
   return Math.asin(Math.sin(lat) * Math.sin(dec) + Math.cos(lat) * Math.cos(dec) * Math.cos(ha)) / rad;
 }
-// 按观测地经度推算时区（中国 ≈ UTC+8），不依赖浏览器时区
+// Time zone is estimated from the site's longitude so the result doesn't depend on the viewer's browser
 const tzMs = () => Math.round(state.lon / 15) * 3600000;
 function nightStart() {
   const local = new Date(Date.now() + tzMs());
   let start = Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate(), 20);
-  if (local.getUTCHours() < 12) start -= 86400000;   // 凌晨查看时，“今晚”指昨晚 20:00 开始的这一夜
+  if (local.getUTCHours() < 12) start -= 86400000;   // after midnight, "tonight" is the night that began yesterday
   return new Date(start - tzMs());
 }
 function tonight(obj) {
   const start = nightStart();
   let good = 0, best = -90, bestAt = null;
-  for (let i = 0; i <= 48; i++) {           // 每 10 分钟采样，共 8 小时
-    const t = new Date(start.getTime() + i * 600000);
-    const a = altitude(obj, t);
+  for (let i = 0; i <= 48; i++) {           // every 10 minutes for 8 hours
+    const time = new Date(start.getTime() + i * 600000);
+    const a = altitude(obj, time);
     if (a > 30) good++;
-    if (a > best) { best = a; bestAt = t; }
+    if (a > best) { best = a; bestAt = time; }
   }
   return { ok: good >= 12, best, bestAt };
 }
 
-// ---------- 渲染 ----------
+// ---------- Rendering ----------
 const fmtTime = (s) => s >= 3600 ? `${(s / 3600).toFixed(1)} h` : `${Math.round(s / 60)} min`;
 const hhmm = (d) => new Date(d.getTime() + tzMs()).toISOString().slice(11, 16);
+const sumIntegration = (o) => o.shot.sessions.reduce((a, x) => a + (x.integration || 0), 0);
+const nameOf = (o) => state.lang === "zh" ? (o.zh || o.en) : o.en;
+const conOf = (o) => state.lang === "zh" ? (CONSTELLATIONS_ZH[o.con] || o.con) : o.con;
+
+function renderChrome() {
+  document.documentElement.lang = state.lang === "zh" ? "zh-CN" : "en";
+  const title = state.config.title || "Messier Marathon";
+  document.title = title;
+  $("#title").textContent = title;
+  $("#subtitle").textContent = t("subtitle") + (state.config.telescope ? t("with") + state.config.telescope : "");
+  $("#lang").textContent = t("other");
+  document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = t(el.dataset.i18n); });
+  $("#filters").innerHTML = ["all", "done", "todo", "tonight"].map((f) =>
+    `<button class="chip" data-f="${f}" aria-pressed="${state.filter === f}">${t(f)}</button>`).join("") +
+    `<input type="search" id="q" placeholder="${t("search")}" value="${state.q.replace(/"/g, "&quot;")}">`;
+  $("#types").innerHTML = `<button class="chip" data-t="" aria-pressed="${!state.type}">${t("allTypes")}</button>` +
+    Object.entries(TYPES).map(([k, v]) =>
+      `<button class="chip" data-t="${k}" aria-pressed="${state.type === k}">${v[state.lang]}</button>`).join("");
+  $("#footer").innerHTML = state.config.repo ? `<a href="${state.config.repo}">${t("footer")}</a>` : "";
+}
 
 function render() {
   const objs = state.data.objects;
@@ -152,85 +202,91 @@ function render() {
   const done = MESSIER.filter((o) => o.shot);
   $("#count").textContent = done.length;
   $("#ring").style.setProperty("--p", (done.length / 110) * 100);
-  const total = done.reduce((s, o) => s + o.shot.sessions.reduce((a, x) => a + x.integration, 0), 0);
-  const nights = new Set(done.flatMap((o) => o.shot.sessions.map((x) => x.date))).size;
+  const total = done.reduce((s, o) => s + sumIntegration(o), 0);
+  const sessions = done.reduce((s, o) => s + o.shot.sessions.length, 0);
   $("#stats").innerHTML = [
-    `已拍 <b>${done.length}</b>`, `剩余 <b>${110 - done.length}</b>`,
-    `总积分 <b>${fmtTime(total)}</b>`, `拍摄日 <b>${nights}</b>`,
-    `今晚可补 <b>${MESSIER.filter((o) => !o.shot && o.tn.ok).length}</b>`,
-  ].map((s) => `<span class="stat">${s}</span>`).join("");
+    [t("shot"), done.length], [t("left"), 110 - done.length], [t("total"), fmtTime(total)],
+    [t("sessions"), sessions], [t("tonightN"), MESSIER.filter((o) => !o.shot && o.tn.ok).length],
+  ].map(([k, v]) => `<span class="stat">${k} <b>${v}</b></span>`).join("");
 
-  const q = state.q.trim().toLowerCase().replace(/^m\s*/, "");
+  const q = state.q.trim().toLowerCase().replace(/^m(essier)?\s*/, "");
   const list = MESSIER.filter((o) => {
     if (state.filter === "done" && !o.shot) return false;
     if (state.filter === "todo" && o.shot) return false;
     if (state.filter === "tonight" && (o.shot || !o.tn.ok)) return false;
     if (state.type && o.type !== state.type) return false;
-    if (q && !(String(o.m) === q || o.cn.toLowerCase().includes(q) || o.con.includes(q))) return false;
+    if (q && !(String(o.m) === q || [o.en, o.zh, o.con, CONSTELLATIONS_ZH[o.con] || ""]
+      .some((s) => s.toLowerCase().includes(q)))) return false;
     return true;
   });
   if (state.filter === "tonight") list.sort((a, b) => a.tn.bestAt - b.tn.bestAt);
 
   $("#grid").innerHTML = list.length ? list.map((o) => {
     const img = o.shot?.image ? `style="background-image:url('${o.shot.image}')"` : "";
-    const sub = o.shot
-      ? `${o.shot.sessions.length} 组 · ${fmtTime(o.shot.sessions.reduce((a, x) => a + x.integration, 0))}`
-      : `${TYPES[o.type]} · ${o.mag}等`;
+    const sub = o.shot && o.shot.sessions.length
+      ? `${I18N[state.lang].nSessions(o.shot.sessions.length)}${sumIntegration(o) ? " · " + fmtTime(sumIntegration(o)) : ""}`
+      : `${TYPES[o.type][state.lang]} · ${o.mag} ${t("mag")}`;
     return `<button class="card ${o.shot ? "done" : ""}" data-m="${o.m}">
       <div class="thumb" ${img}>${img ? "" : "M" + o.m}
-        ${o.shot ? '<span class="badge ok">✓ 已拍</span>' : ""}
-        ${!o.shot && o.tn.ok ? `<span class="badge tn">今晚 ${hhmm(o.tn.bestAt)}</span>` : ""}
+        ${o.shot ? `<span class="badge ok">${t("badgeShot")}</span>` : ""}
+        ${!o.shot && o.tn.ok ? `<span class="badge tn">${fill(t("badgeTonight"), { t: hhmm(o.tn.bestAt) })}</span>` : ""}
       </div>
-      <div class="info"><div class="m">M${o.m}<span>${o.cn}</span></div>
-        <div class="meta">${o.con} · ${sub}</div></div>
+      <div class="info"><div class="m">M${o.m}<span>${nameOf(o)}</span></div>
+        <div class="meta">${conOf(o)} · ${sub}</div></div>
     </button>`;
-  }).join("") : `<div class="empty">没有符合条件的天体</div>`;
+  }).join("") : `<div class="empty">${t("empty")}</div>`;
 }
 
 function openDetail(m) {
   const o = MESSIER.find((x) => x.m === m);
   const s = o.shot;
-  const rows = s ? s.sessions.map((x) => `<tr><td>${x.date} ${x.time}</td><td>${x.camera}</td>
-    <td>${x.exp}s</td><td>${x.gain}</td><td>${x.stacked || "—"} / ${x.frames}</td><td>${fmtTime(x.integration)}</td></tr>`).join("") : "";
+  const dash = (v, unit = "") => v == null ? "—" : v + unit;
+  const rows = s ? s.sessions.map((x, i) => `<tr><td>${i + 1}</td><td>${dash(x.camera)}</td><td>${dash(x.exp, "s")}</td>
+    <td>${dash(x.gain)}</td><td>${x.stacked || "—"} / ${x.frames}</td><td>${x.integration ? fmtTime(x.integration) : "—"}</td></tr>`).join("") : "";
   $("#dlg").innerHTML = `${s?.image ? `<img src="${s.image}" alt="M${m}">` : ""}
     <div class="dlg">
-      <button class="chip close" onclick="dlg.close()">关闭</button>
-      <h2>M${m} ${o.cn}</h2>
-      <div class="sub">${TYPES[o.type]} · ${o.con} · 星等 ${o.mag} · 赤经 ${o.ra.toFixed(2)}h 赤纬 ${o.dec.toFixed(1)}°</div>
-      <div class="sub">今晚最高 ${o.tn.best.toFixed(0)}°（约 ${hhmm(o.tn.bestAt)}）${o.tn.ok ? " · ✅ 适合拍摄" : ""}</div>
-      ${s ? `<div class="tablewrap"><table><tr><th>时间</th><th>相机</th><th>曝光</th><th>增益</th><th>叠加/总帧</th><th>积分</th></tr>${rows}</table></div>`
-          : `<p class="sub">还没拍 🔭</p>`}
+      <button class="chip close" onclick="dlg.close()">${t("close")}</button>
+      <h2>M${m} ${nameOf(o)}</h2>
+      <div class="sub">${TYPES[o.type][state.lang]} · ${conOf(o)} · ${o.mag} ${t("mag")} ·
+        ${t("ra")} ${o.ra.toFixed(2)}h · ${t("dec")} ${o.dec.toFixed(1)}°</div>
+      <div class="sub">${fill(t("tonightMax"), { a: o.tn.best.toFixed(0), t: hhmm(o.tn.bestAt) })}${o.tn.ok ? t("good") : ""}</div>
+      ${s && s.sessions.length ? `<div class="tablewrap"><table><tr>${t("cols").map((c) => `<th>${c}</th>`).join("")}</tr>${rows}</table></div>`
+          : s ? "" : `<p class="sub">${t("notYet")}</p>`}
     </div>`;
   $("#dlg").showModal();
 }
 
-// ---------- 事件 ----------
-$("#types").innerHTML = `<button class="chip" data-t="" aria-pressed="true">全部类型</button>` +
-  Object.entries(TYPES).map(([k, v]) => `<button class="chip" data-t="${k}" aria-pressed="false">${v}</button>`).join("");
+// ---------- Events ----------
 $("#filters").addEventListener("click", (e) => {
   const b = e.target.closest("[data-f]"); if (!b) return;
-  state.filter = b.dataset.f;
-  $("#filters").querySelectorAll("[data-f]").forEach((x) => x.setAttribute("aria-pressed", x === b));
-  render();
+  state.filter = b.dataset.f; renderChrome(); render();
 });
+$("#filters").addEventListener("input", (e) => { if (e.target.id === "q") { state.q = e.target.value; render(); } });
 $("#types").addEventListener("click", (e) => {
   const b = e.target.closest("[data-t]"); if (!b) return;
-  state.type = b.dataset.t;
-  $("#types").querySelectorAll("[data-t]").forEach((x) => x.setAttribute("aria-pressed", x === b));
-  render();
+  state.type = b.dataset.t; renderChrome(); render();
 });
-$("#q").addEventListener("input", (e) => { state.q = e.target.value; render(); });
+$("#lang").addEventListener("click", () => {
+  state.lang = state.lang === "en" ? "zh" : "en"; store.set("lang", state.lang); renderChrome(); render();
+});
 $("#grid").addEventListener("click", (e) => { const c = e.target.closest(".card"); if (c) openDetail(+c.dataset.m); });
 $("#dlg").addEventListener("click", (e) => { if (e.target.id === "dlg") e.target.close(); });
 for (const k of ["lat", "lon"]) {
-  $("#" + k).value = state[k];
   $("#" + k).addEventListener("change", (e) => { state[k] = +e.target.value; store.set(k, state[k]); render(); });
 }
 
-render();
-fetch("data.json", { cache: "no-store" }).then((r) => r.json()).then((d) => {
-  state.data = d; $("#updated").textContent = d.updated; render();
-}).catch(() => { $("#updated").textContent = "（未找到 data.json）"; });
+const getJSON = (url, fallback) => fetch(url, { cache: "no-store" }).then((r) => r.ok ? r.json() : fallback).catch(() => fallback);
+Promise.all([getJSON("config.json", {}), getJSON("data.json", { objects: {} })]).then(([config, data]) => {
+  state.config = config;
+  state.data = data;
+  state.lang = store.get("lang", config.default_language === "zh" ? "zh" : "en");
+  state.lat = store.get("lat", config.latitude ?? 0);
+  state.lon = store.get("lon", config.longitude ?? 0);
+  $("#lat").value = state.lat;
+  $("#lon").value = state.lon;
+  renderChrome();
+  render();
+});
 </script>
 </body>
 </html>

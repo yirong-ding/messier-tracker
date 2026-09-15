@@ -1,0 +1,11 @@
+{
+  "title": "Messier Marathon",
+  "telescope": "DWARF",
+  "photos_dir": "H:\\Astronomy",
+  "scan_depth": 1,
+  "thumbnail_names": ["stacked_thumbnail.jpg", "stacked.jpg"],
+  "latitude": 31.2,
+  "longitude": 121.5,
+  "default_language": "en",
+  "repo": "https://github.com/yirong-ding/messier-tracker"
+}

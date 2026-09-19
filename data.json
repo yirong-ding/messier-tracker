@@ -1,5 +1,40 @@
 {
  "objects": {
+  "27": {
+   "image": "img/M27.jpg",
+   "sessions": [
+    {
+     "date": "2026-09-18",
+     "time": "21:18",
+     "camera": "TELE",
+     "exp": 30.0,
+     "gain": 60,
+     "frames": 14,
+     "stacked": 12,
+     "integration": 360
+    },
+    {
+     "date": "2026-09-18",
+     "time": "21:28",
+     "camera": "TELE",
+     "exp": 30.0,
+     "gain": 60,
+     "frames": 74,
+     "stacked": 60,
+     "integration": 1800
+    },
+    {
+     "date": "2026-09-18",
+     "time": "22:17",
+     "camera": "TELE",
+     "exp": 30.0,
+     "gain": 60,
+     "frames": 201,
+     "stacked": 195,
+     "integration": 5850
+    }
+   ]
+  },
   "31": {
    "image": "img/M31.jpg",
    "sessions": [
